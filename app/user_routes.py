@@ -5,7 +5,7 @@ from datetime import datetime
 from flask import request, jsonify
 from sqlalchemy import func
 from app import db, app
-from app.models import Task, UserTask, TaskUpdates
+from app.models import Task, UserTask, TaskUpdates, Photo
 
 
 @app.route('/user_task_counts', methods=['GET'])
@@ -13,20 +13,29 @@ def user_task_count():
     try:
 
         userId = request.args.get('userId', type=int)
+        print(userId)
         counts = db.session.query(
             func.count().label('total_rows'),
             func.sum(db.cast(UserTask.isTaskComplete, db.Integer)).label('completed_true_count')
         ).filter(UserTask.userId == userId).first()
-        completed_false_count = counts.total_rows - counts.completed_true_count
-        print(str(counts.total_rows))
-        print(str(counts.completed_true_count))
-        print(str(completed_false_count))
-        response_data = {
-            'total_task': counts.total_rows,
-            'completed_task': counts.completed_true_count,
-            'pending_task': completed_false_count
-        }
-        return jsonify({'code': 200, 'message': 'Data Fetch Successfully', 'response': response_data})
+        if counts.total_rows > 0:
+            completed_false_count = counts.total_rows - counts.completed_true_count
+            print(str(counts.total_rows))
+            print(str(counts.completed_true_count))
+            print(str(completed_false_count))
+            response_data = {
+                'total_task': counts.total_rows,
+                'completed_task': counts.completed_true_count,
+                'pending_task': completed_false_count
+            }
+            return jsonify({'code': 200, 'message': 'Data Fetch Successfully', 'response': response_data})
+        else:
+            response_data = {
+                'total_task': 0,
+                'completed_task': 0,
+                'pending_task': 0
+            }
+            return jsonify({'code': 200, 'message': 'Data Fetch Successfully','response': response_data})
 
     except Exception as e:
         print(str(e))
@@ -141,19 +150,19 @@ def update_task_details():
         raw_data = request.get_data()
         data_str = raw_data.decode('utf-8')
         data = json.loads(data_str)
+        task_id = data.get('taskId')
+        userTaskId = data.get('userTaskId')
+        activityId = data.get('activityId')
+
         new_update = TaskUpdates(
             userTaskId=data.get('userTaskId'),
             taskId=data.get('taskId'),
             userId=data.get('userId'),
             male_count=data.get('male_count'),
             female_count=data.get('female_count'),
-            demo_count=data.get('demo_count'),
-            event_count=data.get('event_count'),
             lg_code=data.get('lg_code'),
             wells_count=data.get('wells_count'),
-            survey_count=data.get('survey_count'),
             village_count=data.get('village_count'),
-            training_count=data.get('training_count'),
             no_of_farmers=data.get('no_of_farmers'),
             subject=data.get('subject'),
             findings=data.get('findings'),
@@ -161,19 +170,17 @@ def update_task_details():
             reason=data.get('reason'),
             meeting_with_whome=data.get('meeting_with_whome'),
             name_of_farmer=data.get('name_of_farmer'),
-            spinnerSelection=data.get('spinnerSelection'),
             photo=data.get('photo'),
             update_date=data.get('update_date'),
+            photos=[Photo(photoUrl=photo_url) for photo_url in data.get('photoList', [])]
         )
 
         print(new_update)
 
-        # Start a new session for the task update
         db.session.add(new_update)
-        task_id = data.get('taskId')
-        userTaskId = data.get('userTaskId')
+
         print(userTaskId)
-        activityId = data.get('activityId')
+
         userTask = UserTask.query.filter_by(userTaskId=userTaskId).first()
         print(userTask)
 

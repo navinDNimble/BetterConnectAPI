@@ -12,6 +12,7 @@ class Users(db.Model):
     employeeId = db.Column()  # Assuming a maximum length of 20 for employee ID
     reportAuthority = db.Column()  # Assuming a maximum length of 50 characters for report authority
     joiningDate = db.Column()  # Assuming a Date type for joining date
+    profilePhoto = db.Column()  # Assuming a
 
     def as_dict(self):
         return {
@@ -24,7 +25,8 @@ class Users(db.Model):
             'post': self.post,
             'employeeId': self.employeeId,
             'reportAuthority': self.reportAuthority,
-            'joiningDate': str(self.joiningDate) if self.joiningDate else None
+            'joiningDate': str(self.joiningDate) if self.joiningDate else None,
+            'profilePhoto': self.profilePhoto,
         }
 
 
@@ -87,13 +89,10 @@ class TaskUpdates(db.Model):
     userId = db.Column()
     male_count = db.Column()
     female_count = db.Column()
-    demo_count = db.Column()
-    event_count = db.Column()
     lg_code = db.Column()
     wells_count = db.Column()
     survey_count = db.Column()
     village_count = db.Column()
-    training_count = db.Column()
     no_of_farmers = db.Column()
     subject = db.Column()
     findings = db.Column()
@@ -101,9 +100,9 @@ class TaskUpdates(db.Model):
     reason = db.Column()
     meeting_with_whome = db.Column()
     name_of_farmer = db.Column()
-    spinnerSelection = db.Column()
     photo = db.Column()
     update_date = db.Column()
+    photos = db.relationship('Photo', backref='task_update', lazy=True, cascade='all, delete-orphan')
 
     def as_dict(self):
         return {
@@ -113,24 +112,33 @@ class TaskUpdates(db.Model):
             'userId': self.userId,
             'male_count': self.male_count,
             'female_count': self.female_count,
-            'demo_count': self.demo_count,
-            'event_count': self.event_count,
             'lg_code': self.lg_code,
             'wells_count': self.wells_count,
             'survey_count': self.survey_count,
             'village_count': self.village_count,
-            'training_count': self.training_count,
             'no_of_farmers': self.no_of_farmers,
             'subject': self.subject,
             'findings': self.findings,
             'reason_for_visit': self.reason_for_visit,
             'meeting_with_whome': self.meeting_with_whome,
             'name_of_farmer': self.name_of_farmer,
-            'spinnerSelection': self.spinnerSelection,
             'photo': self.photo,
+            'photos': [photo.as_dict() for photo in self.photos],
             'update_date': str(self.update_date) if self.update_date else None
         }
 
+
+class Photo(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    taskUpdateId = db.Column(db.Integer, db.ForeignKey('task_updates.taskUpdateId'), nullable=False)
+    photoUrl = db.Column(db.String(255))
+
+    def as_dict(self):
+        return {
+            'id': self.id,
+            'taskUpdateId': self.taskUpdateId,
+            'photoUrl': self.photoUrl,
+        }
 
 class Activity(db.Model):
     activityId = db.Column(db.Integer, primary_key=True)
@@ -159,6 +167,7 @@ class Subactivity(db.Model):
 class Taskmode(db.Model):
     taskModeId = db.Column(db.Integer, primary_key=True)
     taskModeName = db.Column()
+
     def as_dict(self):
         return {
             'taskModeId': self.taskModeId,

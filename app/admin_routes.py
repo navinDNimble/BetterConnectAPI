@@ -1,7 +1,7 @@
 import json
 import time
 from datetime import datetime
-
+from datetime import timedelta
 from sqlalchemy.exc import IntegrityError
 
 from flask import request, jsonify
@@ -9,6 +9,7 @@ from app import db, app
 from app.models import Users, Task, UserTask, Taskmode, Activity, Subactivity
 from sqlalchemy import func
 from sqlalchemy.dialects.mysql import insert
+from sqlalchemy import func, text
 
 
 # 3 Admin Home Page task Data
@@ -19,24 +20,32 @@ def task_count():
             func.count().label('total_rows'),
             func.sum(db.cast(UserTask.isTaskComplete, db.Integer)).label('completed_true_count')
         ).first()
-        completed_false_count = counts.total_rows - counts.completed_true_count
-        print(str(counts.total_rows))
-        print(str(counts.completed_true_count))
-        print(str(completed_false_count))
-        response_data = {
-            'total_task': counts.total_rows,
-            'completed_task': counts.completed_true_count,
-            'pending_task': completed_false_count
-        }
-        return jsonify({'code': 200, 'message': 'Data Fetch Successfully', 'response': response_data})
+        if counts.total_rows > 0:
+            completed_false_count = counts.total_rows - counts.completed_true_count
+            print(str(counts.total_rows))
+            print(str(counts.completed_true_count))
+            print(str(completed_false_count))
+            response_data = {
+                'total_task': counts.total_rows,
+                'completed_task': counts.completed_true_count,
+                'pending_task': completed_false_count
+            }
+            return jsonify({'code': 200, 'message': 'Data Fetch Successfully', 'response': response_data})
+        else:
+            response_data = {
+                'total_task': 0,
+                'completed_task': 0,
+                'pending_task': 0
+            }
+            return jsonify({'code': 200, 'message': 'Data Fetch Successfully', 'response': response_data})
 
     except Exception as e:
         print(str(e))
         return jsonify({'code': 409, 'message': 'e'})
 
 
-@app.route('/get_all_task', methods=['GET'])
-def get_user_task():
+@app.route('/get_task_to_assign', methods=['GET'])
+def get_task_to_assign():
     try:
         time.sleep(1)
         page = request.args.get('page', type=int)
@@ -48,7 +57,7 @@ def get_user_task():
             result_list = (
                 db.session.query(Task)
                 .order_by(Task.taskId.desc())
-                .filter(Task.startDate <= current_date, Task.endDate >= current_date)
+                .filter(Task.endDate >= current_date)
                 .limit(tasks_per_page)
                 .offset(offset)
                 .all()
@@ -58,7 +67,65 @@ def get_user_task():
             result_list = (
                 db.session.query(Task)
                 .filter(Task.taskName.ilike(f"%{searchKey}%"))
-                .filter(Task.startDate <= current_date, Task.endDate >= current_date)
+                .filter(Task.endDate >= current_date)
+                .order_by(Task.taskId.desc())
+                .limit(tasks_per_page)
+                .offset(offset)
+                .all()
+            )
+
+        task_list = [task.as_dict() for task in result_list]
+        listSize = len(task_list)
+        if listSize == 0:
+            if page == 0:
+                return jsonify({'code': 404, 'message': 'No Tasks Available', 'isLastPage': True})
+            else:
+                return jsonify({'code': 409, 'message': 'No More Task Available', 'isLastPage': True})
+        elif listSize < tasks_per_page:
+            return jsonify(
+                {'code': 200, 'response': task_list, 'message': 'Tasks retrieved successfully', 'isLastPage': True})
+        elif listSize == tasks_per_page:
+            return jsonify(
+                {'code': 200, 'response': task_list, 'message': 'Task retrieved successfully', 'isLastPage': False})
+        return jsonify(
+            {'code': 200, 'response': task_list, 'message': 'Task retrieved successfully'})
+
+    except Exception as e:
+        print(str(e))
+        return jsonify({'code': 500, 'message': 'Internal Server Error'})
+
+
+@app.route('/get_admin_schedule_task', methods=['GET'])
+def get_admin_schedule_task():
+    try:
+        time.sleep(1)
+        page = request.args.get('page', type=int)
+        searchKey = request.args.get('searchKey', type=str)
+        tasks_per_page = 3
+        offset = page * tasks_per_page
+        current_date = datetime.now().date()
+        if searchKey is None or searchKey.strip() == "":
+            result_list = (
+                db.session.query(Task)
+                .order_by(Task.taskId.desc())
+                .filter(
+                    Task.startDate <= current_date,
+                    text(f"{Task.endDate} + INTERVAL 3 DAY >= :current_date").params(current_date=current_date)
+                )
+                .limit(tasks_per_page)
+                .offset(offset)
+                .all()
+            )
+
+        else:
+
+            result_list = (
+                db.session.query(Task)
+                .filter(Task.taskName.ilike(f"%{searchKey}%"))
+                .filter(
+                    Task.startDate <= current_date,
+                    text(f"{Task.endDate} + INTERVAL 3 DAY >= :current_date").params(current_date=current_date)
+                )
                 .order_by(Task.taskId.desc())
                 .limit(tasks_per_page)
                 .offset(offset)
@@ -181,7 +248,7 @@ def get_user_tasks():
 
 
 @app.route('/get_all_user', methods=['GET'])
-def get_admin_user():
+def get_admin_user_list():
     try:
         time.sleep(1)
         page = request.args.get('page', type=int)
@@ -283,3 +350,48 @@ def create_task():
     except Exception as e:
         print(str(e))
         return jsonify({'code': 409, 'message': "Failed to create a new Task"})
+
+
+@app.route('/create_user', methods=['POST'])
+def create_user():
+    try:
+        raw_data = request.get_data()
+        data_str = raw_data.decode('utf-8')
+        data = json.loads(data_str)
+
+        new_user = Users(
+            firstName=data['firstName'],
+            lastName=data['lastName'],
+            mobileNumber=data['mobileNumber'],
+            emailId=data['emailId'],
+            workStation=data['workStation'],
+            post=data['post'],
+            employeeId=data['employeeId'],
+            reportAuthority=data['reportAuthority'],
+            joiningDate=data['joiningDate'],
+            profilePhoto=data['profilePhoto'],
+        )
+        db.session.add(new_user)
+        db.session.commit()
+        print(new_user)
+        return jsonify({'code': 200, 'message': 'User created successfully' , 'response': new_user.as_dict()})
+
+    except IntegrityError as e:
+        db.session.rollback()
+        print(str(e))
+        error_message = str(e)
+        if 'for key \'mobileNumber\'' in error_message:
+            return jsonify(
+                {'code': 409, 'message': 'Mobile number already exists. Please use a different mobile number.'})
+        elif 'for key \'emailId\'' in error_message:
+            return jsonify(
+                {'code': 409, 'message': 'Email already exists. Please use a different email address.'})
+        elif 'for key \'employeeId\'' in error_message:
+            return jsonify(
+                {'code': 409, 'message': 'Employee ID already exists. Please use a different employee ID.'})
+        else:
+            return jsonify({'code': 409, 'message': str(e)})
+
+    except Exception as e:
+        print(str(e))
+        return jsonify({'code': 409, 'message': "Failed to create a new User"})

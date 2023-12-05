@@ -48,13 +48,14 @@ def assign_users_to_task():
             print(user_id)
             passed_total_units = assignment['total_units']
             print(passed_total_units)
-            # TODO:KEEP THE TOTAL UNITS VALUE SAME IF PASSED TOTAL UNITS LESS THAN COMPLETED UNits
+
             stmt = insert(UserTask).values(userId=user_id, taskId=task_id, totalUnits=passed_total_units)
-            # stmt = stmt.on_duplicate_key_update(totalUnits=passed_total_units)
+            stmt = stmt.on_duplicate_key_update(totalUnits=UserTask.totalUnits)
             db.session.execute(stmt)
             db.session.commit()
 
         return jsonify({'code': 200, 'message': 'Users assigned to the task successfully'})
+
     except Exception as e:
         print(str(e))
         return jsonify({'code': 500, 'message': 'Internal Server Error'})
@@ -110,48 +111,7 @@ def get_admin_task():
 
 # 1 create User Admin
 
-@app.route('/create_user', methods=['POST'])
-def create_user():
-    try:
-        raw_data = request.get_data()
-        data_str = raw_data.decode('utf-8')
-        data = json.loads(data_str)
 
-        new_user = Users(
-            firstName=data['firstName'],
-            lastName=data['lastName'],
-            mobileNumber=data['mobileNumber'],
-            emailId=data['emailId'],
-            workStation=data['workStation'],
-            post=data['post'],
-            employeeId=data['employeeId'],
-            reportAuthority=data['reportAuthority'],
-            joiningDate=data['joiningDate']
-        )
-        db.session.add(new_user)
-        db.session.commit()
-        print(new_user)
-        return jsonify({'code': 200, 'message': 'User created successfully' , 'response': new_user.as_dict()})
-
-    except IntegrityError as e:
-        db.session.rollback()
-        print(str(e))
-        error_message = str(e)
-        if 'for key \'mobileNumber\'' in error_message:
-            return jsonify(
-                {'code': 409, 'message': 'Mobile number already exists. Please use a different mobile number.'})
-        elif 'for key \'emailId\'' in error_message:
-            return jsonify(
-                {'code': 409, 'message': 'Email already exists. Please use a different email address.'})
-        elif 'for key \'employeeId\'' in error_message:
-            return jsonify(
-                {'code': 409, 'message': 'Employee ID already exists. Please use a different employee ID.'})
-        else:
-            return jsonify({'code': 409, 'message': str(e)})
-
-    except Exception as e:
-        print(str(e))
-        return jsonify({'code': 409, 'message': "Failed to create a new User"})
 
 # @app.route('/api/users', methods=['GET'])
 # def get_users():
