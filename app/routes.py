@@ -3,7 +3,7 @@ from sqlalchemy.exc import IntegrityError
 
 from flask import request, jsonify
 from app import db, app
-from app.models import Users, Task, UserTask
+from app.models import Users, Task, UserTask, Photo
 from sqlalchemy import func
 from sqlalchemy.dialects.mysql import insert
 
@@ -28,7 +28,6 @@ def check_mobile_number():
 
 
 # 9 assign users to tasks
-
 
 
 # 8 assign users to tasks
@@ -59,10 +58,6 @@ def assign_users_to_task():
     except Exception as e:
         print(str(e))
         return jsonify({'code': 500, 'message': 'Internal Server Error'})
-
-
-
-
 
 
 # 4   return the task list for admin
@@ -102,22 +97,14 @@ def get_admin_task():
         return jsonify({'code': 500, 'message': 'Internal Server Error'})
 
 
+@app.route('/get_photos_url', methods=['GET'])
+def get_photo_urls():
+    taskUpdateId = request.args.get('taskUpdateId', type=int)
+    photos = Photo.query.filter_by(taskUpdateId=taskUpdateId).all()
 
+    if not photos:
+        return jsonify({'code': 400, 'message': 'No Photos'})
 
-
-# 2   CREATE Task
-
-
-
-# 1 create User Admin
-
-
-
-# @app.route('/api/users', methods=['GET'])
-# def get_users():
-#     try:
-#         users_list = Users.query.all()
-#         data = [user.as_dict() for user in users_list]
-#         return jsonify({'code': True, 'data': data})
-#     except Exception as e:
-#         return jsonify({'code': False, 'message': str(e)})
+    # Return a list of photo URLs in the response
+    photo_urls = [photo.photoUrl for photo in photos]
+    return jsonify({'code': 200, 'message': 'Photo Fetched SuccessFully', 'response': photo_urls})

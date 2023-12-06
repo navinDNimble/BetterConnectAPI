@@ -35,7 +35,7 @@ def user_task_count():
                 'completed_task': 0,
                 'pending_task': 0
             }
-            return jsonify({'code': 200, 'message': 'Data Fetch Successfully','response': response_data})
+            return jsonify({'code': 200, 'message': 'Data Fetch Successfully', 'response': response_data})
 
     except Exception as e:
         print(str(e))
@@ -153,6 +153,10 @@ def update_task_details():
         task_id = data.get('taskId')
         userTaskId = data.get('userTaskId')
         activityId = data.get('activityId')
+        # if data.get('photo') == 1:
+        photos = [Photo(photoUrl=photo_url) for photo_url in data.get('photoList', [])]
+        # else:
+        #     photos = []
 
         new_update = TaskUpdates(
             userTaskId=data.get('userTaskId'),
@@ -172,7 +176,7 @@ def update_task_details():
             name_of_farmer=data.get('name_of_farmer'),
             photo=data.get('photo'),
             update_date=data.get('update_date'),
-            photos=[Photo(photoUrl=photo_url) for photo_url in data.get('photoList', [])]
+            photos=photos
         )
 
         print(new_update)
