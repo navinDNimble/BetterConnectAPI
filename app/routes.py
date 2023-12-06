@@ -103,7 +103,7 @@ def get_photo_urls():
     photos = Photo.query.filter_by(taskUpdateId=taskUpdateId).all()
 
     if not photos:
-        return jsonify({'code': 400, 'message': 'No Photos'})
+        return jsonify({'code': 400, 'message': 'No Photos For This Task'})
 
     # Return a list of photo URLs in the response
     photo_urls = [photo.photoUrl for photo in photos]
