@@ -1,10 +1,9 @@
 import json
-from sqlalchemy.exc import IntegrityError
+import time
 
 from flask import request, jsonify
 from app import db, app
 from app.models import Users, Task, UserTask, Photo
-from sqlalchemy import func
 from sqlalchemy.dialects.mysql import insert
 
 
@@ -99,6 +98,7 @@ def get_admin_task():
 
 @app.route('/get_photos_url', methods=['GET'])
 def get_photo_urls():
+    time.sleep(2)
     taskUpdateId = request.args.get('taskUpdateId', type=int)
     photos = Photo.query.filter_by(taskUpdateId=taskUpdateId).all()
 

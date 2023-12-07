@@ -6,13 +6,31 @@ from sqlalchemy.exc import IntegrityError
 
 from flask import request, jsonify
 from app import db, app
-from app.models import Users, Task, UserTask, Taskmode, Activity, Subactivity
+from app.models import Users, Task, UserTask, Taskmode, Activity, Subactivity, Managers
 from sqlalchemy import func
 from sqlalchemy.dialects.mysql import insert
 from sqlalchemy import func, text
 
 
 # 3 Admin Home Page task Data
+
+@app.route('/check_manager_mobile_number', methods=['GET'])
+def check_manager_mobile_number():
+    try:
+        mobileNumber = request.args.get('mobileNumber', type=int)
+        user = Managers.query.filter_by(mobileNumber=mobileNumber).first()
+        if user:
+            response = jsonify({'code': 200, 'message': 'Mobile number  exists.', 'response': user.as_dict()})
+        else:
+            response = jsonify({'code': 500, 'message': 'Mobile Number Is Not Register.'})
+
+        return response
+
+    except Exception as e:
+        print(f"Error: {str(e)}")
+        return jsonify({'code': 500, 'message': 'Internal Server Error'})
+
+
 @app.route('/admin_task_counts', methods=['GET'])
 def task_count():
     try:
@@ -108,10 +126,10 @@ def get_admin_schedule_task():
             result_list = (
                 db.session.query(Task)
                 .order_by(Task.taskId.desc())
-                .filter(
-                    Task.startDate <= current_date,
-                    text(f"{Task.endDate} + INTERVAL 3 DAY >= :current_date").params(current_date=current_date)
-                )
+                # .filter(
+                #     Task.startDate <= current_date,
+                #     text(f"{Task.endDate} + INTERVAL 3 DAY >= :current_date").params(current_date=current_date)
+                # )
                 .limit(tasks_per_page)
                 .offset(offset)
                 .all()
@@ -374,7 +392,7 @@ def create_user():
         db.session.add(new_user)
         db.session.commit()
         print(new_user)
-        return jsonify({'code': 200, 'message': 'User created successfully' , 'response': new_user.as_dict()})
+        return jsonify({'code': 200, 'message': 'User created successfully', 'response': new_user.as_dict()})
 
     except IntegrityError as e:
         db.session.rollback()
@@ -395,3 +413,18 @@ def create_user():
     except Exception as e:
         print(str(e))
         return jsonify({'code': 409, 'message': "Failed to create a new User"})
+
+
+@app.route('/get_all_authority', methods=['GET'])
+def get_all_authority():
+    try:
+        time.sleep(1)
+
+        authority = Managers.query.all()
+        authority_list = [authority.as_dict() for authority in authority]
+        return jsonify(
+            {'code': 200, 'response': authority_list, 'message': 'User retrieved successfully', 'isLastPage': True})
+
+    except Exception as e:
+        print(str(e))
+        return jsonify({'code': 500, 'message': 'Internal Server Error'})

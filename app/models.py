@@ -172,3 +172,33 @@ class Taskmode(db.Model):
         return {
             'taskModeId': self.taskModeId,
             'taskModeName': self.taskModeName}
+
+
+class Managers(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    firstName = db.Column()  # Assuming a maximum length of 50 characters for first name
+    lastName = db.Column()  # Assuming a maximum length of 50 characters for last name
+    mobileNumber = db.Column()  # Assuming a maximum length of 10 for mobile number
+    emailId = db.Column()  # Assuming a maximum length of 255 for email ID
+    workStation = db.Column()  # Assuming a maximum length of 50 characters for work station
+    post = db.Column()  # Assuming a maximum length of 50 characters for post
+    employeeId = db.Column()  # Assuming a maximum length of 20 for employee ID
+    reportAuthority = db.Column()  # Assuming a maximum length of 50 characters for report authority
+    joiningDate = db.Column()  # Assuming a Date type for joining date
+    profilePhoto = db.Column()  # Assuming a
+
+    def as_dict(self):
+        return {
+            'userId': self.id,
+            'firstName': self.firstName,
+            'lastName': self.lastName,
+            'mobileNumber': self.mobileNumber,
+            'emailId': self.emailId,
+            'workStation': self.workStation,
+            'post': self.post,
+            'employeeId': self.employeeId,
+            'reportAuthority': self.reportAuthority,
+            'joiningDate': str(self.joiningDate) if self.joiningDate else None,
+            'profilePhoto': self.profilePhoto,
+        }
+
