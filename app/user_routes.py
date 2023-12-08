@@ -45,7 +45,7 @@ def user_task_count():
 @app.route('/get_user_task_completed', methods=['GET'])
 def get_completed_user_task():
     try:
-        time.sleep(1)
+   
         page = request.args.get('page', type=int)
         print(page)
         userId = request.args.get('userId', type=int)
@@ -95,7 +95,7 @@ def get_completed_user_task():
 @app.route('/get_user_task_pending', methods=['GET'])
 def get_pending_user_task():
     try:
-        time.sleep(1)
+   
         page = request.args.get('page', type=int)
         print(page)
         userId = request.args.get('userId', type=int)
@@ -224,7 +224,7 @@ def update_task_details():
 @app.route('/get_update_task_details', methods=['GET'])
 def get_update_task_details():
     try:
-        time.sleep(1)
+   
         userTaskId = request.args.get('userTaskId', type=int)
         taskUpdates = TaskUpdates.query.filter_by(userTaskId=userTaskId).order_by(TaskUpdates.taskUpdateId.desc())
         taskUpdateList = [taskUpdates.as_dict() for taskUpdates in taskUpdates]

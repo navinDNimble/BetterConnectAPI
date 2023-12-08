@@ -47,7 +47,7 @@ def manager_task_count():
 @app.route('/get_manager_schedule_task', methods=['GET'])
 def get_manager_schedule_task():
     try:
-        time.sleep(1)
+   
         id = request.args.get('id', type=int)
         page = request.args.get('page', type=int)
         searchKey = request.args.get('searchKey', type=str)
@@ -106,7 +106,7 @@ def get_manager_schedule_task():
 @app.route('/get_manager_all_user', methods=['GET'])
 def get_manager_all_user():
     try:
-        time.sleep(2)
+    
         id = request.args.get('id', type=int)
         page = request.args.get('page', type=int)
         searchKey = request.args.get('searchKey', type=str)

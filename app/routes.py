@@ -98,7 +98,7 @@ def get_admin_task():
 
 @app.route('/get_photos_url', methods=['GET'])
 def get_photo_urls():
-    time.sleep(2)
+
     taskUpdateId = request.args.get('taskUpdateId', type=int)
     photos = Photo.query.filter_by(taskUpdateId=taskUpdateId).all()
 

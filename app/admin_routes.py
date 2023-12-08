@@ -65,7 +65,7 @@ def task_count():
 @app.route('/get_task_to_assign', methods=['GET'])
 def get_task_to_assign():
     try:
-        time.sleep(1)
+
         page = request.args.get('page', type=int)
         searchKey = request.args.get('searchKey', type=str)
         tasks_per_page = 3
@@ -116,7 +116,7 @@ def get_task_to_assign():
 @app.route('/get_admin_schedule_task', methods=['GET'])
 def get_admin_schedule_task():
     try:
-        time.sleep(1)
+   
         page = request.args.get('page', type=int)
         searchKey = request.args.get('searchKey', type=str)
         tasks_per_page = 3
@@ -174,7 +174,7 @@ def get_admin_schedule_task():
 @app.route('/get_task_users', methods=['GET'])
 def get_task_users():
     try:
-        time.sleep(1)
+       
         page = request.args.get('page', type=int)
         taskId = request.args.get('taskId', type=int)
         tasks_per_page = 3
@@ -220,7 +220,7 @@ def get_task_users():
 @app.route('/get_user_tasks', methods=['GET'])
 def get_user_tasks():
     try:
-        time.sleep(1)
+       
         page = request.args.get('page', type=int)
         print(page)
         userId = request.args.get('userId', type=int)
@@ -268,7 +268,7 @@ def get_user_tasks():
 @app.route('/get_all_user', methods=['GET'])
 def get_admin_user_list():
     try:
-        time.sleep(2)
+    
         page = request.args.get('page', type=int)
         searchKey = request.args.get('searchKey', type=str)
         tasks_per_page = 3
@@ -317,7 +317,7 @@ def get_admin_user_list():
 @app.route('/activities', methods=['GET'])
 def get_activities():
     try:
-        time.sleep(2)
+    
         activities = Activity.query.all()
         subActivities = Subactivity.query.all()
         taskMode = Taskmode.query.all()
@@ -419,7 +419,7 @@ def create_user():
 @app.route('/get_all_authority', methods=['GET'])
 def get_all_authority():
     try:
-        time.sleep(1)
+   
 
         authority = Managers.query.all()
         authority_list = [authority.as_dict() for authority in authority]

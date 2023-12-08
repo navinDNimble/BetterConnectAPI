@@ -14,8 +14,7 @@ class Users(db.Model):
     joiningDate = db.Column(db.Date)  # Assuming joiningDate is a date column
     profilePhoto = db.Column(db.String(255))  # Assuming profilePhoto is a file path or URL
 
-
-def as_dict(self):
+    def as_dict(self):
         return {
             'userId': self.id,
             'firstName': self.firstName,
@@ -32,7 +31,7 @@ def as_dict(self):
 
 
 class Task(db.Model):
-    taskId = db.Column(db.Integer, primary_key=True,autoincrement=True)
+    taskId = db.Column(db.Integer, primary_key=True, autoincrement=True)
     taskName = db.Column(db.String(255), nullable=False)
     activityId = db.Column()
     subActivityId = db.Column()
@@ -86,7 +85,7 @@ class UserTask(db.Model):
 
 
 class TaskUpdates(db.Model):
-    taskUpdateId = db.Column(db.Integer, primary_key=True, autoincrement = True )
+    taskUpdateId = db.Column(db.Integer, primary_key=True, autoincrement=True)
     userTaskId = db.Column()
     taskId = db.Column()
     userId = db.Column()
@@ -132,7 +131,7 @@ class TaskUpdates(db.Model):
 
 
 class Photo(db.Model):
-    id = db.Column(db.Integer, primary_key=True, autoincrement = True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     taskUpdateId = db.Column(db.Integer, db.ForeignKey('task_updates.taskUpdateId'), nullable=False)
     photoUrl = db.Column(db.String(255))
 
@@ -142,6 +141,7 @@ class Photo(db.Model):
             'taskUpdateId': self.taskUpdateId,
             'photoUrl': self.photoUrl,
         }
+
 
 class Activity(db.Model):
     activityId = db.Column(db.Integer, primary_key=True)
@@ -204,4 +204,3 @@ class Managers(db.Model):
             'joiningDate': str(self.joiningDate) if self.joiningDate else None,
             'profilePhoto': self.profilePhoto,
         }
-
