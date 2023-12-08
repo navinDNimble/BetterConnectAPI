@@ -2,19 +2,20 @@ from app import db
 
 
 class Users(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    firstName = db.Column()  # Assuming a maximum length of 50 characters for first name
-    lastName = db.Column()  # Assuming a maximum length of 50 characters for last name
-    mobileNumber = db.Column()  # Assuming a maximum length of 10 for mobile number
-    emailId = db.Column()  # Assuming a maximum length of 255 for email ID
-    workStation = db.Column()
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    firstName = db.Column(db.String(50), nullable=False)
+    lastName = db.Column(db.String(50), nullable=False)
+    mobileNumber = db.Column(unique=True, nullable=False)
+    emailId = db.Column(db.String(255), unique=True, nullable=False)
+    workStation = db.Column(db.String(255), nullable=False)
     post = db.Column()
-    employeeId = db.Column()
+    employeeId = db.Column(db.String(255), unique=True, nullable=False)
     reportAuthority = db.Column()
-    joiningDate = db.Column()
-    profilePhoto = db.Column()
+    joiningDate = db.Column(db.Date)  # Assuming joiningDate is a date column
+    profilePhoto = db.Column(db.String(255))  # Assuming profilePhoto is a file path or URL
 
-    def as_dict(self):
+
+def as_dict(self):
         return {
             'userId': self.id,
             'firstName': self.firstName,
@@ -31,8 +32,8 @@ class Users(db.Model):
 
 
 class Task(db.Model):
-    taskId = db.Column(db.Integer, primary_key=True)
-    taskName = db.Column()
+    taskId = db.Column(db.Integer, primary_key=True,autoincrement=True)
+    taskName = db.Column(db.String(255), nullable=False)
     activityId = db.Column()
     subActivityId = db.Column()
     activityName = db.Column()
@@ -41,9 +42,9 @@ class Task(db.Model):
     modeId = db.Column()
     startDate = db.Column()
     endDate = db.Column()
-    user_alloted = db.Column()
-    user_completed_task = db.Column()
-    createdBy = db.Column()
+    user_alloted = db.Column(db.Integer, default=0)
+    user_completed_task = db.Column(db.Integer, default=0)
+    createdBy = db.Column(db.Integer, default=1)
 
     def as_dict(self):
         return {
@@ -64,13 +65,13 @@ class Task(db.Model):
 
 
 class UserTask(db.Model):
-    userTaskId = db.Column(db.Integer, primary_key=True)
+    userTaskId = db.Column(db.Integer, primary_key=True, autoincrement=True)
     userId = db.Column()
     taskId = db.Column()
-    totalUnits = db.Column()
-    completedUnit = db.Column()
-    isTaskComplete = db.Column()
-    assignBy = db.Column()
+    totalUnits = db.Column(nullable=False)
+    completedUnit = db.Column(db.Integer, default=0)
+    isTaskComplete = db.Column(db.Integer, default=0)
+    assignBy = db.Column(db.Integer, default=1)
 
     def as_dict(self):
         return {
@@ -85,7 +86,7 @@ class UserTask(db.Model):
 
 
 class TaskUpdates(db.Model):
-    taskUpdateId = db.Column(db.Integer, primary_key=True)
+    taskUpdateId = db.Column(db.Integer, primary_key=True, autoincrement = True )
     userTaskId = db.Column()
     taskId = db.Column()
     userId = db.Column()
@@ -131,7 +132,7 @@ class TaskUpdates(db.Model):
 
 
 class Photo(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement = True)
     taskUpdateId = db.Column(db.Integer, db.ForeignKey('task_updates.taskUpdateId'), nullable=False)
     photoUrl = db.Column(db.String(255))
 
@@ -177,17 +178,17 @@ class Taskmode(db.Model):
 
 
 class Managers(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    firstName = db.Column()  # Assuming a maximum length of 50 characters for first name
-    lastName = db.Column()  # Assuming a maximum length of 50 characters for last name
-    mobileNumber = db.Column()  # Assuming a maximum length of 10 for mobile number
-    emailId = db.Column()  # Assuming a maximum length of 255 for email ID
-    workStation = db.Column()  # Assuming a maximum length of 50 characters for work station
-    post = db.Column()  # Assuming a maximum length of 50 characters for post
-    employeeId = db.Column()  # Assuming a maximum length of 20 for employee ID
-    reportAuthority = db.Column()  # Assuming a maximum length of 50 characters for report authority
-    joiningDate = db.Column()  # Assuming a Date type for joining date
-    profilePhoto = db.Column()  # Assuming a
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    firstName = db.Column(db.String(50), nullable=False)
+    lastName = db.Column(db.String(50), nullable=False)
+    mobileNumber = db.Column(unique=True, nullable=False)
+    emailId = db.Column(db.String(255), unique=True, nullable=False)
+    workStation = db.Column(db.String(255), nullable=False)
+    post = db.Column()
+    employeeId = db.Column(db.String(255), unique=True, nullable=False)
+    reportAuthority = db.Column()
+    joiningDate = db.Column(db.Date)  # Assuming joiningDate is a date column
+    profilePhoto = db.Column(db.String(255))  # Assuming profilePhoto is a file path or URL
 
     def as_dict(self):
         return {
