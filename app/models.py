@@ -7,12 +7,12 @@ class Users(db.Model):
     lastName = db.Column()  # Assuming a maximum length of 50 characters for last name
     mobileNumber = db.Column()  # Assuming a maximum length of 10 for mobile number
     emailId = db.Column()  # Assuming a maximum length of 255 for email ID
-    workStation = db.Column()  # Assuming a maximum length of 50 characters for work station
-    post = db.Column()  # Assuming a maximum length of 50 characters for post
-    employeeId = db.Column()  # Assuming a maximum length of 20 for employee ID
-    reportAuthority = db.Column()  # Assuming a maximum length of 50 characters for report authority
-    joiningDate = db.Column()  # Assuming a Date type for joining date
-    profilePhoto = db.Column()  # Assuming a
+    workStation = db.Column()
+    post = db.Column()
+    employeeId = db.Column()
+    reportAuthority = db.Column()
+    joiningDate = db.Column()
+    profilePhoto = db.Column()
 
     def as_dict(self):
         return {
@@ -70,6 +70,7 @@ class UserTask(db.Model):
     totalUnits = db.Column()
     completedUnit = db.Column()
     isTaskComplete = db.Column()
+    assignBy = db.Column()
 
     def as_dict(self):
         return {
@@ -78,7 +79,8 @@ class UserTask(db.Model):
             'taskId': self.taskId,
             'totalUnits': self.totalUnits,
             'completedUnit': self.completedUnit,
-            'isTaskComplete': self.isTaskComplete
+            'isTaskComplete': self.isTaskComplete,
+            'assignBy': self.assignBy
         }
 
 

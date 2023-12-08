@@ -268,7 +268,7 @@ def get_user_tasks():
 @app.route('/get_all_user', methods=['GET'])
 def get_admin_user_list():
     try:
-        time.sleep(1)
+        time.sleep(2)
         page = request.args.get('page', type=int)
         searchKey = request.args.get('searchKey', type=str)
         tasks_per_page = 3
@@ -317,6 +317,7 @@ def get_admin_user_list():
 @app.route('/activities', methods=['GET'])
 def get_activities():
     try:
+        time.sleep(2)
         activities = Activity.query.all()
         subActivities = Subactivity.query.all()
         taskMode = Taskmode.query.all()
