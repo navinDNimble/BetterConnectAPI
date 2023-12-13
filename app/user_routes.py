@@ -5,9 +5,22 @@ from datetime import datetime
 from flask import request, jsonify
 from sqlalchemy import func
 from app import db, app
-from app.models import Task, UserTask, TaskUpdates, Photo
+from app.models import Task, UserTask, TaskUpdates, Photo, Users
 
 
+@app.route('/check_mobile_number', methods=['GET'])
+def check_mobile_number():
+    try:
+        mobileNumber = request.args.get('mobileNumber', type=int)
+        user = Users.query.filter_by(mobileNumber=mobileNumber).first()
+        if user:
+            response = jsonify({'code': 200, 'message': 'Mobile number  exists.', 'response': user.as_dict()})
+        else:
+            response = jsonify({'code': 500, 'message': 'Mobile Number Is Not Register.'})
+        return response
+    except Exception as e:
+        print(f"Error: {str(e)}")
+        return jsonify({'code': 500, 'message': 'Internal Server Error'})
 @app.route('/user_task_counts', methods=['GET'])
 def user_task_count():
     try:
@@ -176,7 +189,8 @@ def update_task_details():
             name_of_farmer=data.get('name_of_farmer'),
             photo=data.get('photo'),
             update_date=data.get('update_date'),
-            photos=photos
+            photos=photos,
+            workStation=data.get('workStation'),
         )
 
         print(new_update)
@@ -196,19 +210,19 @@ def update_task_details():
             else:
                 new_completeUnit = userTask.completedUnit + 1
 
-            if new_completeUnit > userTask.totalUnits:
-                db.session.rollback()
-                return jsonify({
-                    'code': 404,
-                    'message': f'Max Unit Available to Complete Task are {userTask.totalUnits - userTask.completedUnit}'
-                })
+            # if new_completeUnit > userTask.totalUnits:
+            #     db.session.rollback()
+            #     return jsonify({
+            #         'code': 404,
+            #         'message': f'Max Unit Available to Complete Task are {userTask.totalUnits - userTask.completedUnit}'
+            #     })
 
             userTask.completedUnit = new_completeUnit
 
             if new_completeUnit == userTask.totalUnits:
                 userTask.isTaskComplete = 1
-                task = Task.query.filter_by(taskId=task_id).first()
-                task.user_completed_task = +1
+                # task = Task.query.filter_by(taskId=task_id).first()
+                # task.user_completed_task = +1
 
             db.session.commit()
             return jsonify({'code': 200, 'message': ' Task Updated  successfully', 'response': new_update.as_dict()})
@@ -221,18 +235,3 @@ def update_task_details():
         return jsonify({'code': 404, 'message': f"Failed to update task: {str(e)}"})
 
 
-@app.route('/get_update_task_details', methods=['GET'])
-def get_update_task_details():
-    try:
-   
-        userTaskId = request.args.get('userTaskId', type=int)
-        taskUpdates = TaskUpdates.query.filter_by(userTaskId=userTaskId).order_by(TaskUpdates.taskUpdateId.desc())
-        taskUpdateList = [taskUpdates.as_dict() for taskUpdates in taskUpdates]
-        listSize = len(taskUpdateList)
-        if listSize == 0:
-            return jsonify({'code': 404, 'message': 'No Task Updates Available'})
-        else:
-            return jsonify({'code': 200, 'response': taskUpdateList, 'message': 'User retrieved successfully'})
-    except Exception as e:
-        print(str(e))
-        return jsonify({'code': 500, 'message': 'Internal Server Error'})

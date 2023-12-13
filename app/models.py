@@ -1,3 +1,5 @@
+from sqlalchemy.orm import relationship, class_mapper
+
 from app import db
 
 
@@ -7,7 +9,39 @@ class Users(db.Model):
     lastName = db.Column(db.String(50), nullable=False)
     mobileNumber = db.Column(unique=True, nullable=False)
     emailId = db.Column(db.String(255), unique=True, nullable=False)
-    workStation = db.Column(db.String(255), nullable=False)
+    workStation = db.Column(db.Integer, db.ForeignKey('workstations.id'))
+    workStationName = db.relationship('Workstations', backref=db.backref('users', lazy=True))
+    post = db.Column()
+    employeeId = db.Column(db.String(255), unique=True, nullable=False)
+    reportAuthority = db.Column()
+    joiningDate = db.Column(db.Date)  # Assuming joiningDate is a date column
+    profilePhoto = db.Column(db.String(255))  # Assuming profilePhoto is a file path or URL
+
+    def as_dict(self):
+        return {
+            'userId': self.id,
+            'firstName': self.firstName,
+            'lastName': self.lastName,
+            'mobileNumber': self.mobileNumber,
+            'emailId': self.emailId,
+             'workStation': self.workStation,  # Assuming 'id' is the primary key
+            'workStationName': self.workStationName.workStationName if self.workStationName else None,
+            'post': self.post,
+            'employeeId': self.employeeId,
+            'reportAuthority': self.reportAuthority,
+            'joiningDate': str(self.joiningDate) if self.joiningDate else None,
+            'profilePhoto': self.profilePhoto,
+        }
+
+
+class Managers(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    firstName = db.Column(db.String(50), nullable=False)
+    lastName = db.Column(db.String(50), nullable=False)
+    mobileNumber = db.Column(unique=True, nullable=False)
+    emailId = db.Column(db.String(255), unique=True, nullable=False)
+    workStation = db.Column(db.Integer, db.ForeignKey('workstations.id'))
+    workStationName = db.relationship('Workstations', backref=db.backref('managers', lazy=True))
     post = db.Column()
     employeeId = db.Column(db.String(255), unique=True, nullable=False)
     reportAuthority = db.Column()
@@ -22,6 +56,7 @@ class Users(db.Model):
             'mobileNumber': self.mobileNumber,
             'emailId': self.emailId,
             'workStation': self.workStation,
+            'workStationName': self.workStationName.workStationName,
             'post': self.post,
             'employeeId': self.employeeId,
             'reportAuthority': self.reportAuthority,
@@ -29,6 +64,15 @@ class Users(db.Model):
             'profilePhoto': self.profilePhoto,
         }
 
+
+class Workstations(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    workStationName = db.Column(db.String(255))
+
+    def as_dict(self):
+        return {
+            'id': self.id,
+            'workStationName': self.workStationName}
 
 class Task(db.Model):
     taskId = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -41,6 +85,8 @@ class Task(db.Model):
     modeId = db.Column()
     startDate = db.Column()
     endDate = db.Column()
+    workStation = db.Column(db.Integer, db.ForeignKey('workstations.id'))
+    workStationName = db.relationship('Workstations', backref=db.backref('task', lazy=True))
     user_alloted = db.Column(db.Integer, default=0)
     user_completed_task = db.Column(db.Integer, default=0)
     createdBy = db.Column(db.Integer, default=1)
@@ -57,6 +103,8 @@ class Task(db.Model):
             'modeId': self.modeId,
             'startDate': str(self.startDate),
             'endDate': str(self.endDate),
+            'workStation': self.workStation,
+            'workStationName': self.workStationName.workStationName,
             'user_alloted': self.user_alloted,
             'user_completed_task': self.user_completed_task,
             'createdBy': self.createdBy
@@ -71,6 +119,8 @@ class UserTask(db.Model):
     completedUnit = db.Column(db.Integer, default=0)
     isTaskComplete = db.Column(db.Integer, default=0)
     assignBy = db.Column(db.Integer, default=1)
+    workStation = db.Column(db.Integer, db.ForeignKey('workstations.id'))
+    workStationName = db.relationship('Workstations', backref=db.backref('user_task', lazy=True))
 
     def as_dict(self):
         return {
@@ -80,7 +130,9 @@ class UserTask(db.Model):
             'totalUnits': self.totalUnits,
             'completedUnit': self.completedUnit,
             'isTaskComplete': self.isTaskComplete,
-            'assignBy': self.assignBy
+            'assignBy': self.assignBy,
+            'workStation': self.workStation,
+            'workStationName': self.workStationName.workStationName
         }
 
 
@@ -105,6 +157,8 @@ class TaskUpdates(db.Model):
     photo = db.Column()
     update_date = db.Column()
     photos = db.relationship('Photo', backref='task_update', lazy=True, cascade='all, delete-orphan')
+    workStation = db.Column(db.Integer, db.ForeignKey('workstations.id'))
+    workStationName = db.relationship('Workstations', backref=db.backref('task_updates', lazy=True))
 
     def as_dict(self):
         return {
@@ -126,7 +180,9 @@ class TaskUpdates(db.Model):
             'name_of_farmer': self.name_of_farmer,
             'photo': self.photo,
             'photos': [photo.as_dict() for photo in self.photos],
-            'update_date': str(self.update_date) if self.update_date else None
+            'update_date': str(self.update_date) if self.update_date else None,
+            'workStation': self.workStation,
+            'workStationName': self.workStationName.workStationName
         }
 
 
@@ -177,30 +233,9 @@ class Taskmode(db.Model):
             'taskModeName': self.taskModeName}
 
 
-class Managers(db.Model):
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    firstName = db.Column(db.String(50), nullable=False)
-    lastName = db.Column(db.String(50), nullable=False)
-    mobileNumber = db.Column(unique=True, nullable=False)
-    emailId = db.Column(db.String(255), unique=True, nullable=False)
-    workStation = db.Column(db.String(255), nullable=False)
-    post = db.Column()
-    employeeId = db.Column(db.String(255), unique=True, nullable=False)
-    reportAuthority = db.Column()
-    joiningDate = db.Column(db.Date)  # Assuming joiningDate is a date column
-    profilePhoto = db.Column(db.String(255))  # Assuming profilePhoto is a file path or URL
-
-    def as_dict(self):
-        return {
-            'userId': self.id,
-            'firstName': self.firstName,
-            'lastName': self.lastName,
-            'mobileNumber': self.mobileNumber,
-            'emailId': self.emailId,
-            'workStation': self.workStation,
-            'post': self.post,
-            'employeeId': self.employeeId,
-            'reportAuthority': self.reportAuthority,
-            'joiningDate': str(self.joiningDate) if self.joiningDate else None,
-            'profilePhoto': self.profilePhoto,
-        }
+class RelWorkstation(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    workStation = db.Column(db.Integer, db.ForeignKey('user.ws'))
+    security_workStation = db.Column(db.Integer, db.ForeignKey('user.ws'))
+def to_dict(model):
+    return {column.key: getattr(model, column.key) for column in class_mapper(model.__class__).mapped_table.c}
