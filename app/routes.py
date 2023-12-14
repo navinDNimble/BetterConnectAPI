@@ -156,9 +156,9 @@ def get_task_users():
         listSize = len(user_list)
         if listSize == 0:
             if page == 0:
-                return jsonify({'code': 404, 'message': 'No UserTask Available', 'isLastPage': True})
+                return jsonify({'code': 404, 'message': 'No Task Users Available', 'isLastPage': True})
             else:
-                return jsonify({'code': 409, 'message': 'No More UserTask Available', 'isLastPage': True})
+                return jsonify({'code': 409, 'message': 'No More Task Users', 'isLastPage': True})
         elif listSize < tasks_per_page:
             return jsonify(
                 {'code': 200, 'response': user_list, 'message': 'UserTask retrieved successfully', 'isLastPage': True})
