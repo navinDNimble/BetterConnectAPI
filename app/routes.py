@@ -84,7 +84,7 @@ def get_schedule_task():
                 .filter(RelWorkstation.workStation == workStation)
                 .filter(
                     Task.startDate <= current_date,
-                    text(f"{Task.endDate} + INTERVAL 3 DAY >= :current_date").params(current_date=current_date)
+                    text(f"{'task.endDate'} + INTERVAL 3 DAY >= :current_date").params(current_date=current_date)
                 )
                 .limit(tasks_per_page)
                 .offset(offset)
@@ -99,7 +99,7 @@ def get_schedule_task():
                 .filter(RelWorkstation.workStation == workStation)
                 .filter(
                     Task.startDate <= current_date,
-                    text(f"{Task.endDate} + INTERVAL 3 DAY >= :current_date").params(current_date=current_date)
+                    text(f"{'task.endDate'} + INTERVAL 3 DAY >= :current_date").params(current_date=current_date)
                 )
                 .filter(Task.taskName.ilike(f"%{searchKey}%"))
                 .limit(tasks_per_page)
