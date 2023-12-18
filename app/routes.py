@@ -21,6 +21,8 @@ def check_manager_mobile_number():
             response = jsonify({'code': 200, 'message': 'Mobile number  exists.', 'response': user.as_dict()})
         else:
             response = jsonify({'code': 500, 'message': 'Mobile Number Is Not Register.'})
+
+        print(response)
         return response
     except Exception as e:
         print(f"Error: {str(e)}")
@@ -43,27 +45,24 @@ def task_count():
         counts = query.first()
         if counts.total_rows > 0:
             completed_false_count = counts.total_rows - counts.completed_true_count
-            print(str(counts.total_rows))
-            print(str(counts.completed_true_count))
-            print(str(completed_false_count))
             response_data = {
                 'total_task': counts.total_rows,
                 'completed_task': counts.completed_true_count,
                 'pending_task': completed_false_count
             }
-            return jsonify({'code': 200, 'message': 'Data Fetch Successfully', 'response': response_data})
         else:
             response_data = {
                 'total_task': 0,
                 'completed_task': 0,
                 'pending_task': 0
             }
-            return jsonify({'code': 200, 'message': 'Data Fetch Successfully', 'response': response_data})
+
+        jsonResponse = jsonify({'code': 200, 'message': 'Data Fetch Successfully', 'response': response_data})
+        return jsonResponse
 
     except Exception as e:
         print(str(e))
         return jsonify({'code': 409, 'message': 'e'})
-
 
 
 @app.route('/get_schedule_task', methods=['GET'])
@@ -121,11 +120,12 @@ def get_schedule_task():
             return jsonify(
                 {'code': 200, 'response': task_list, 'message': 'Task retrieved successfully', 'isLastPage': False})
         return jsonify(
-            {'code': 200, 'response': task_list, 'message': 'Task retrieved successfully'})
+            {'code': 200, 'response': task_list, 'message': 'Task retrieved successfully', 'isLastPage': False})
 
     except Exception as e:
         print(str(e))
         return jsonify({'code': 500, 'message': 'Internal Server Error'})
+
 
 @app.route('/get_task_users', methods=['GET'])
 def get_task_users():
@@ -182,9 +182,12 @@ def get_update_task_details():
         taskUpdateList = [taskUpdates.as_dict() for taskUpdates in taskUpdates]
         listSize = len(taskUpdateList)
         if listSize == 0:
-            return jsonify({'code': 404, 'message': 'No Task Updates Available'})
+            jsonResponse = jsonify({'code': 404, 'message': 'No Task Updates Available'})
         else:
-            return jsonify({'code': 200, 'response': taskUpdateList, 'message': 'User retrieved successfully'})
+            jsonResponse = jsonify({'code': 200, 'response': taskUpdateList, 'message': 'User retrieved successfully'})
+
+        print(jsonResponse)
+        return jsonResponse
     except Exception as e:
         print(str(e))
         return jsonify({'code': 500, 'message': 'Internal Server Error'})
@@ -271,6 +274,8 @@ def get_user_list():
     except Exception as e:
         print(str(e))
         return jsonify({'code': 500, 'message': 'Internal Server Error'})
+
+
 @app.route('/get_user_tasks', methods=['GET'])
 def get_user_tasks():
     try:
@@ -317,6 +322,7 @@ def get_user_tasks():
     except Exception as e:
         print(str(e))
         return jsonify({'code': 500, 'message': 'Internal Server Error'})
+
 
 @app.route('/get_task_to_assign', methods=['GET'])
 def get_task_to_assign():
@@ -395,20 +401,20 @@ def create_user():
         )
         db.session.add(new_user)
         db.session.commit()
-        print(new_user)
+        print(new_user.as_dict())
         return jsonify({'code': 200, 'message': 'User created successfully', 'response': new_user.as_dict()})
 
     except IntegrityError as e:
         db.session.rollback()
         print(str(e))
         error_message = str(e)
-        if 'for key \'mobileNumber\'' in error_message:
+        if 'for key \'users.mobileNumber\'' in error_message:
             return jsonify(
                 {'code': 409, 'message': 'Mobile number already exists. Please use a different mobile number.'})
-        elif 'for key \'emailId\'' in error_message:
+        elif 'for key \'users.emailId\'' in error_message:
             return jsonify(
                 {'code': 409, 'message': 'Email already exists. Please use a different email address.'})
-        elif 'for key \'employeeId\'' in error_message:
+        elif 'for key \'users.employeeId\'' in error_message:
             return jsonify(
                 {'code': 409, 'message': 'Employee ID already exists. Please use a different employee ID.'})
         else:
@@ -455,7 +461,7 @@ def create_task():
             user_completed_task=data['user_completed_task'],
             createdBy=data['createdBy']  # admin or role id by whose task is created
         )
-        print(new_task)
+        print(new_task.as_dict())
         db.session.add(new_task)
         db.session.commit()
 
@@ -473,7 +479,6 @@ def assign_users_to_task():
         raw_data = request.get_data()
         data_str = raw_data.decode('utf-8')
         data = json.loads(data_str)
-
         user_assignments = data['userList']
         task_id = data['taskId']
         print(user_assignments)
@@ -484,7 +489,8 @@ def assign_users_to_task():
             passed_total_units = assignment['total_units']
             workStation = assignment['workStation']
             print(passed_total_units)
-            stmt = insert(UserTask).values(userId=user_id, taskId=task_id, totalUnits=passed_total_units ,workStation = workStation)
+            stmt = insert(UserTask).values(userId=user_id, taskId=task_id, totalUnits=passed_total_units,
+                                           workStation=workStation)
             stmt = stmt.on_duplicate_key_update(totalUnits=passed_total_units,
                                                 isTaskComplete=case(
                                                     (UserTask.completedUnit < passed_total_units, 0),
@@ -499,8 +505,6 @@ def assign_users_to_task():
         print(str(e))
         db.session.rollback()
         return jsonify({'code': 500, 'message': 'Internal Server Error'})
-
-
 
 
 @app.route('/activities', methods=['GET'])
@@ -540,8 +544,6 @@ def get_photo_urls():
     # Return a list of photo URLs in the response
     photo_urls = [photo.photoUrl for photo in photos]
     return jsonify({'code': 200, 'message': 'Photo Fetched SuccessFully', 'response': photo_urls})
-
-
 
 # @app.route('/get_all_task', methods=['GET'])
 # def get_all_task():

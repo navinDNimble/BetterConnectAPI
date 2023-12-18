@@ -195,7 +195,7 @@ def update_task_details():
             photos=photos,
             workStation=data.get('workStation'),
         )
-
+        print(activityId)
         print(new_update)
 
         db.session.add(new_update)
@@ -210,6 +210,7 @@ def update_task_details():
             if activityId == 11:
                 survey_count = data.get('survey_count')
                 new_completeUnit = userTask.completedUnit + survey_count
+                print(new_completeUnit)
             else:
                 new_completeUnit = userTask.completedUnit + 1
 
