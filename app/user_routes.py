@@ -21,6 +21,8 @@ def check_mobile_number():
     except Exception as e:
         print(f"Error: {str(e)}")
         return jsonify({'code': 500, 'message': 'Internal Server Error'})
+
+
 @app.route('/user_task_counts', methods=['GET'])
 def user_task_count():
     try:
@@ -58,7 +60,7 @@ def user_task_count():
 @app.route('/get_user_task_completed', methods=['GET'])
 def get_completed_user_task():
     try:
-   
+
         page = request.args.get('page', type=int)
         print(page)
         userId = request.args.get('userId', type=int)
@@ -108,7 +110,7 @@ def get_completed_user_task():
 @app.route('/get_user_task_pending', methods=['GET'])
 def get_pending_user_task():
     try:
-   
+
         page = request.args.get('page', type=int)
         print(page)
         userId = request.args.get('userId', type=int)
@@ -179,6 +181,7 @@ def update_task_details():
             female_count=data.get('female_count'),
             lg_code=data.get('lg_code'),
             wells_count=data.get('wells_count'),
+            survey_count=data.get('survey_count'),
             village_count=data.get('village_count'),
             no_of_farmers=data.get('no_of_farmers'),
             subject=data.get('subject'),
@@ -232,6 +235,5 @@ def update_task_details():
 
     except Exception as e:
         print(str(e))
+        db.session.rollback()
         return jsonify({'code': 404, 'message': f"Failed to update task: {str(e)}"})
-
-

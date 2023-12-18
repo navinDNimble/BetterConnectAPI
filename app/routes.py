@@ -416,6 +416,7 @@ def create_user():
 
     except Exception as e:
         print(str(e))
+        db.session.rollback()
         return jsonify({'code': 409, 'message': "Failed to create a new User"})
 
 
@@ -461,6 +462,7 @@ def create_task():
         return jsonify({'code': 200, 'message': 'Task created successfully', 'response': new_task.as_dict()})
 
     except Exception as e:
+        db.session.rollback()
         print(str(e))
         return jsonify({'code': 409, 'message': "Failed to create a new Task"})
 
@@ -495,6 +497,7 @@ def assign_users_to_task():
 
     except Exception as e:
         print(str(e))
+        db.session.rollback()
         return jsonify({'code': 500, 'message': 'Internal Server Error'})
 
 
