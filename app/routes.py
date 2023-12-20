@@ -3,7 +3,7 @@ from flask import request, jsonify
 from flask import request, jsonify
 import json
 from sqlalchemy import func, case
-from datetime import datetime
+from datetime import datetime, timedelta
 from app import db, app
 from app.models import Users, Task, Photo, RelWorkstation, Managers, UserTask, Activity, Subactivity, Taskmode, \
     TaskUpdates
@@ -22,7 +22,7 @@ def check_manager_mobile_number():
         else:
             response = jsonify({'code': 500, 'message': 'Mobile Number Is Not Register.'})
 
-        print(response)
+        print(response.get_data(as_text=True))
         return response
     except Exception as e:
         print(f"Error: {str(e)}")
@@ -64,6 +64,39 @@ def task_count():
         print(str(e))
         return jsonify({'code': 409, 'message': 'e'})
 
+@app.route('/manager_graph', methods=['GET'])
+def get_manager_graph_data():
+    try:
+        workStation = request.args.get('workStation', type=int)
+        activityId = request.args.get('activityId', type=int)
+
+        results = (
+            db.session.query(
+                func.DATE(TaskUpdates.update_date).label('date'),
+                func.coalesce(
+                    func.sum(
+                        case(
+                            (TaskUpdates.activityId == 11, TaskUpdates.survey_count)
+                        )
+                    ),
+                    func.count().label('row_count')
+                ).label('unit')
+            )
+            .join(RelWorkstation, TaskUpdates.workStation == RelWorkstation.security_workStation)
+            .filter(RelWorkstation.workStation == workStation)
+            .filter(TaskUpdates.update_date >= datetime.now() - timedelta(days=7))
+            .filter(TaskUpdates.activityId == activityId)
+            .group_by(func.DATE(TaskUpdates.update_date))
+            .order_by(func.DATE(TaskUpdates.update_date).desc())
+            .all()
+        )
+
+        data = [{'date': result.date.strftime('%Y-%m-%d'), 'unit': result.unit} for result in results]
+
+        return jsonify(data)
+
+    except Exception as e:
+        return jsonify({'error': str(e)})
 
 @app.route('/get_schedule_task', methods=['GET'])
 def get_schedule_task():

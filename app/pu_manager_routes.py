@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from flask import request, jsonify
-from sqlalchemy import func, text
+from sqlalchemy import func
 
 from app import db, app
 from app.models import Users, Task, UserTask

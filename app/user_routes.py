@@ -1,9 +1,7 @@
 import json
-import time
-from datetime import datetime
-
+from datetime import datetime, timedelta
 from flask import request, jsonify
-from sqlalchemy import func
+from sqlalchemy import func, case
 from app import db, app
 from app.models import Task, UserTask, TaskUpdates, Photo, Users
 
@@ -55,6 +53,41 @@ def user_task_count():
     except Exception as e:
         print(str(e))
         return jsonify({'code': 500, 'message': str(e)})
+
+
+@app.route('/user_graph', methods=['GET'])
+def get_graph_data():
+    try:
+        userId = request.args.get('userId', type=int)
+        activityId = request.args.get('activityId', type=int)
+
+        results = (
+            db.session.query(
+                func.DATE(TaskUpdates.update_date).label('date'),
+                func.coalesce(
+                    func.sum(
+                        case(
+                            (TaskUpdates.activityId == 11, TaskUpdates.survey_count)
+                        )
+                    ),
+                    func.count().label('row_count')
+                ).label('unit')
+            )
+            .filter(TaskUpdates.userId == userId)
+            .filter(TaskUpdates.update_date >= datetime.now() - timedelta(days=7))
+            .filter(TaskUpdates.activityId == activityId)
+            .group_by(func.DATE(TaskUpdates.update_date))
+            .order_by(func.DATE(TaskUpdates.update_date).desc())
+            .all()
+        )
+
+        data = [{'date': result.date.strftime('%Y-%m-%d'), 'unit': int(result.unit)} for result in results]
+        return jsonify({'code': 200, 'message': 'Data Fetched Success', 'response': data})
+
+
+    except Exception as e:
+        print(str(e))
+        return jsonify({'code': 500, 'message': 'Internal Server Error'})
 
 
 @app.route('/get_user_task_completed', methods=['GET'])
@@ -177,6 +210,7 @@ def update_task_details():
             userTaskId=data.get('userTaskId'),
             taskId=data.get('taskId'),
             userId=data.get('userId'),
+            activityId=data.get('activityId'),
             male_count=data.get('male_count'),
             female_count=data.get('female_count'),
             lg_code=data.get('lg_code'),
@@ -223,7 +257,7 @@ def update_task_details():
 
             userTask.completedUnit = new_completeUnit
 
-            if new_completeUnit == userTask.totalUnits:
+            if new_completeUnit >= userTask.totalUnits:
                 userTask.isTaskComplete = 1
                 # task = Task.query.filter_by(taskId=task_id).first()
                 # task.user_completed_task = +1

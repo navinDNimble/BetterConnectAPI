@@ -24,7 +24,7 @@ class Users(db.Model):
             'lastName': self.lastName,
             'mobileNumber': self.mobileNumber,
             'emailId': self.emailId,
-             'workStation': self.workStation,  # Assuming 'id' is the primary key
+            'workStation': self.workStation,  # Assuming 'id' is the primary key
             'workStationName': self.workStationName.workStationName if self.workStationName else None,
             'post': self.post,
             'employeeId': self.employeeId,
@@ -73,6 +73,7 @@ class Workstations(db.Model):
         return {
             'id': self.id,
             'workStationName': self.workStationName}
+
 
 class Task(db.Model):
     taskId = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -141,6 +142,7 @@ class TaskUpdates(db.Model):
     userTaskId = db.Column()
     taskId = db.Column()
     userId = db.Column()
+    activityId = db.Column()
     male_count = db.Column()
     female_count = db.Column()
     lg_code = db.Column()
@@ -166,6 +168,7 @@ class TaskUpdates(db.Model):
             'userTaskId': self.userTaskId,
             'taskId': self.taskId,
             'userId': self.userId,
+            'activityId': self.activityId,
             'male_count': self.male_count,
             'female_count': self.female_count,
             'lg_code': self.lg_code,
@@ -237,5 +240,7 @@ class RelWorkstation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     workStation = db.Column(db.Integer, db.ForeignKey('user.ws'))
     security_workStation = db.Column(db.Integer, db.ForeignKey('user.ws'))
+
+
 def to_dict(model):
     return {column.key: getattr(model, column.key) for column in class_mapper(model.__class__).mapped_table.c}
