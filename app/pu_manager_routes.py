@@ -2,10 +2,8 @@ from datetime import datetime
 
 from flask import request, jsonify
 from sqlalchemy import func
-
 from app import db, app
 from app.models import Users, Task, UserTask
-
 
 @app.route('/manager_task_counts', methods=['GET'])
 def manager_task_count():

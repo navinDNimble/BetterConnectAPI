@@ -6,7 +6,7 @@ from sqlalchemy import func, case
 from datetime import datetime, timedelta
 from app import db, app
 from app.models import Users, Task, Photo, RelWorkstation, Managers, UserTask, Activity, Subactivity, Taskmode, \
-    TaskUpdates
+    TaskUpdates, Workstations
 from sqlalchemy import func, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.dialects.mysql import insert
@@ -479,6 +479,7 @@ def create_task():
         raw_data = request.get_data()
         data_str = raw_data.decode('utf-8')
         data = json.loads(data_str)
+        workstation = Workstations.query.get(data['workStation'])
         new_task = Task(
             taskName=data['taskName'],
             activityId=data['activityId'],
@@ -490,6 +491,7 @@ def create_task():
             startDate=data['startDate'],
             endDate=data['endDate'],
             workStation=data['workStation'],
+            workStationName=workstation,
             user_alloted=data['user_alloted'],
             user_completed_task=data['user_completed_task'],
             createdBy=data['createdBy']  # admin or role id by whose task is created
