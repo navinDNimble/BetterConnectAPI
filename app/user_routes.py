@@ -61,6 +61,13 @@ def get_graph_data():
         userId = request.args.get('userId', type=int)
         activityId = request.args.get('activityId', type=int)
 
+        # Get the first day of the current month
+        first_day_of_month = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        last_day_of_month = (first_day_of_month + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+        date_range = [first_day_of_month + timedelta(days=i) for i in
+                      range((last_day_of_month - first_day_of_month).days + 1)]
+
+
         results = (
             db.session.query(
                 func.DATE(TaskUpdates.update_date).label('date'),
@@ -74,16 +81,23 @@ def get_graph_data():
                 ).label('unit')
             )
             .filter(TaskUpdates.userId == userId)
-            .filter(TaskUpdates.update_date >= datetime.now() - timedelta(days=7))
+            .filter(TaskUpdates.update_date >= first_day_of_month)
             .filter(TaskUpdates.activityId == activityId)
             .group_by(func.DATE(TaskUpdates.update_date))
             .order_by(func.DATE(TaskUpdates.update_date).desc())
             .all()
         )
 
-        data = [{'date': result.date.strftime('%Y-%m-%d'), 'unit': int(result.unit)} for result in results]
-        return jsonify({'code': 200, 'message': 'Data Fetched Success', 'response': data})
 
+        # Create a dictionary to store results for each date
+        date_dict = {result.date.strftime('%Y-%m-%d'): int(result.unit) for result in results}
+
+
+
+
+        data = [{'date': date.strftime('%d'), 'unit': date_dict.get(date.strftime('%Y-%m-%d'), 0)} for date in
+                sorted(date_range, reverse=False)]
+        return jsonify({'code': 200, 'message': 'Data Fetched Success', 'response': data})
 
     except Exception as e:
         print(str(e))
@@ -98,7 +112,7 @@ def get_completed_user_task():
         print(page)
         userId = request.args.get('userId', type=int)
         print(userId)
-        tasks_per_page = 3
+        tasks_per_page = 10
         offset = page * tasks_per_page
         current_date = datetime.now().date()
 
@@ -148,7 +162,7 @@ def get_pending_user_task():
         print(page)
         userId = request.args.get('userId', type=int)
         print(userId)
-        tasks_per_page = 3
+        tasks_per_page = 10
         offset = page * tasks_per_page
         current_date = datetime.now().date()
 
