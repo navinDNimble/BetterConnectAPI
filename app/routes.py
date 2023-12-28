@@ -124,10 +124,10 @@ def get_schedule_task():
                 .order_by(Task.taskId.desc())
                 .join(RelWorkstation, Task.workStation == RelWorkstation.security_workStation)
                 .filter(RelWorkstation.workStation == workStation)
-                .filter(or_(
+                .filter(
                     (Task.startDate >= last_day),
                     (Task.endDate + timedelta(days=3) >= current_date)
-                ))
+                )
                 .limit(tasks_per_page)
                 .offset(offset)
                 .all()
