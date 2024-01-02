@@ -12,13 +12,14 @@ def check_mobile_number():
         mobileNumber = request.args.get('mobileNumber', type=int)
         user = Users.query.filter_by(mobileNumber=mobileNumber).first()
         if user:
-            response = jsonify({'code': 200, 'message': 'Mobile number  exists.', 'response': user.as_dict()})
+            response = print_and_return_response(
+                {'code': 200, 'message': 'Mobile number  exists.', 'response': user.as_dict()})
         else:
-            response = jsonify({'code': 500, 'message': 'Mobile Number Is Not Register.'})
+            response = print_and_return_response({'code': 500, 'message': 'Mobile Number Is Not Register.'})
         return response
     except Exception as e:
         print(f"Error: {str(e)}")
-        return jsonify({'code': 500, 'message': 'Internal Server Error'})
+        return print_and_return_response({'code': 500, 'message': 'Internal Server Error'})
 
 
 @app.route('/user_task_counts', methods=['GET'])
@@ -41,18 +42,20 @@ def user_task_count():
                 'completed_task': counts.completed_true_count,
                 'pending_task': completed_false_count
             }
-            return jsonify({'code': 200, 'message': 'Data Fetch Successfully', 'response': response_data})
+            return print_and_return_response(
+                {'code': 200, 'message': 'Data Fetch Successfully', 'response': response_data})
         else:
             response_data = {
                 'total_task': 0,
                 'completed_task': 0,
                 'pending_task': 0
             }
-            return jsonify({'code': 200, 'message': 'Data Fetch Successfully', 'response': response_data})
+            return print_and_return_response(
+                {'code': 200, 'message': 'Data Fetch Successfully', 'response': response_data})
 
     except Exception as e:
         print(str(e))
-        return jsonify({'code': 500, 'message': str(e)})
+        return print_and_return_response({'code': 500, 'message': str(e)})
 
 
 @app.route('/user_graph', methods=['GET'])
@@ -66,7 +69,6 @@ def get_graph_data():
         last_day_of_month = (first_day_of_month + timedelta(days=32)).replace(day=1) - timedelta(days=1)
         date_range = [first_day_of_month + timedelta(days=i) for i in
                       range((last_day_of_month - first_day_of_month).days + 1)]
-
 
         results = (
             db.session.query(
@@ -88,20 +90,16 @@ def get_graph_data():
             .all()
         )
 
-
         # Create a dictionary to store results for each date
         date_dict = {result.date.strftime('%Y-%m-%d'): int(result.unit) for result in results}
 
-
-
-
         data = [{'date': date.strftime('%d'), 'unit': date_dict.get(date.strftime('%Y-%m-%d'), 0)} for date in
                 sorted(date_range, reverse=False)]
-        return jsonify({'code': 200, 'message': 'Data Fetched Success', 'response': data})
+        return print_and_return_response({'code': 200, 'message': 'Data Fetched Success', 'response': data})
 
     except Exception as e:
         print(str(e))
-        return jsonify({'code': 500, 'message': 'Internal Server Error'})
+        return print_and_return_response({'code': 500, 'message': 'Internal Server Error'})
 
 
 @app.route('/get_user_task_completed', methods=['GET'])
@@ -137,21 +135,22 @@ def get_completed_user_task():
         listSize = len(task_list)
         if listSize == 0:
             if page == 0:
-                return jsonify({'code': 404, 'message': 'No UserTask Available', 'isLastPage': True})
+                return print_and_return_response({'code': 404, 'message': 'No UserTask Available', 'isLastPage': True})
             else:
-                return jsonify({'code': 409, 'message': 'No More UserTask Available', 'isLastPage': True})
+                return print_and_return_response(
+                    {'code': 409, 'message': 'No More UserTask Available', 'isLastPage': True})
         elif listSize < tasks_per_page:
-            return jsonify(
+            return print_and_return_response(
                 {'code': 200, 'response': task_list, 'message': 'UserTask retrieved successfully', 'isLastPage': True})
         elif listSize == tasks_per_page:
-            return jsonify(
+            return print_and_return_response(
                 {'code': 200, 'response': task_list, 'message': 'UserTask retrieved successfully', 'isLastPage': False})
-        return jsonify(
+        return print_and_return_response(
             {'code': 200, 'response': task_list, 'message': 'UserTask retrieved successfully'})
 
     except Exception as e:
         print(str(e))
-        return jsonify({'code': 500, 'message': 'Internal Server Error'})
+        return print_and_return_response({'code': 500, 'message': 'Internal Server Error'})
 
 
 @app.route('/get_user_task_pending', methods=['GET'])
@@ -188,21 +187,23 @@ def get_pending_user_task():
         listSize = len(task_list)
         if listSize == 0:
             if page == 0:
-                return jsonify({'code': 404, 'message': 'No Pending UserTask Available', 'isLastPage': True})
+                return print_and_return_response(
+                    {'code': 404, 'message': 'No Pending UserTask Available', 'isLastPage': True})
             else:
-                return jsonify({'code': 409, 'message': 'No More UserTask Available', 'isLastPage': True})
+                return print_and_return_response(
+                    {'code': 409, 'message': 'No More UserTask Available', 'isLastPage': True})
         elif listSize < tasks_per_page:
-            return jsonify(
+            return print_and_return_response(
                 {'code': 200, 'response': task_list, 'message': 'UserTask retrieved successfully', 'isLastPage': True})
         elif listSize == tasks_per_page:
-            return jsonify(
+            return print_and_return_response(
                 {'code': 200, 'response': task_list, 'message': 'UserTask retrieved successfully', 'isLastPage': False})
-        return jsonify(
+        return print_and_return_response(
             {'code': 200, 'response': task_list, 'message': 'UserTask retrieved successfully'})
 
     except Exception as e:
         print(str(e))
-        return jsonify({'code': 500, 'message': 'Internal Server Error'})
+        return print_and_return_response({'code': 500, 'message': 'Internal Server Error'})
 
 
 @app.route('/update_task_details', methods=['POST'])
@@ -215,10 +216,9 @@ def update_task_details():
         task_id = data.get('taskId')
         userTaskId = data.get('userTaskId')
         activityId = data.get('activityId')
-        # if data.get('photo') == 1:
+
         photos = [Photo(photoUrl=photo_url) for photo_url in data.get('photoList', [])]
-        # else:
-        #     photos = []
+
 
         new_update = TaskUpdates(
             userTaskId=data.get('userTaskId'),
@@ -243,15 +243,9 @@ def update_task_details():
             photos=photos,
             workStation=data.get('workStation'),
         )
-        print(activityId)
-        print(new_update)
-
         db.session.add(new_update)
-
-        print(userTaskId)
-
         userTask = UserTask.query.filter_by(userTaskId=userTaskId).first()
-        print(userTask)
+
 
         if userTask:
 
@@ -277,12 +271,19 @@ def update_task_details():
                 # task.user_completed_task = +1
 
             db.session.commit()
-            return jsonify({'code': 200, 'message': ' Task Updated  successfully', 'response': new_update.as_dict()})
+            return print_and_return_response(
+                {'code': 200, 'message': ' Task Updated  successfully', 'response': new_update.as_dict()})
         else:
             # If the task is not found, return a 404 response
-            return jsonify({'code': 404, 'message': 'Task not found for the provided user'})
+            return print_and_return_response({'code': 404, 'message': 'Task not found for the provided user'})
 
     except Exception as e:
         print(str(e))
         db.session.rollback()
-        return jsonify({'code': 404, 'message': f"Failed to update task: {str(e)}"})
+        return print_and_return_response({'code': 404, 'message': f"Failed to update task: {str(e)}"})
+
+
+def print_and_return_response(response_data):
+    return_response = jsonify(response_data)
+    print(return_response.get_data(as_text=True))
+    return return_response
